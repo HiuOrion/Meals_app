@@ -1,22 +1,33 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_app/providers/meals_provider.dart';
 import 'package:todo_app/screens/categories.dart';
 import 'package:todo_app/screens/filter.dart';
 import 'package:todo_app/screens/main_drawer.dart';
 import 'package:todo_app/screens/meals.dart';
 import 'package:todo_app/models/meal.dart';
 
-class TabsScreen extends StatefulWidget {
+const initialFilters = {
+  Filter.glutenFree:false,
+  Filter.lactoseFree: false,
+  Filter.vegetable:false,
+  Filter.vegan:false,
+};
+
+class TabsScreen extends ConsumerStatefulWidget {
   const TabsScreen({super.key});
 
   @override
-  State<TabsScreen> createState() {
+  ConsumerState<TabsScreen> createState() {
     return _TabsScreenState();
   }
 }
 
-class _TabsScreenState extends State<TabsScreen> {
+class _TabsScreenState extends ConsumerState<TabsScreen> {
   int _selectedPageIndex = 0;
   final List<Meal> _favoriteMeals = [];
+  Map<Filter, bool> _selectedFilters = initialFilters;
 
   void _showInfoMessage(String message) {
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -52,21 +63,50 @@ class _TabsScreenState extends State<TabsScreen> {
     });
   }
 
-  void _setScreen(String identifier) {
-    Navigator.of(context).pop();
+  void _setScreen(String identifier) async {
+    Navigator.of(context).pop(); // trả về 1 giá trị fulture
     if (identifier == "Filters") {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (ctx) => const FiltersScreen()),
+
+      //result là map có key là enum(Filter) và value là boolean
+     final result = await Navigator.of(context).push<Map<Filter, bool>>(
+        MaterialPageRoute(builder: (ctx) =>  FiltersScreen(currentFilter: _selectedFilters)),
       );
-    }else {
-      Navigator.of(context).pop();
+
+     //Sử dụng để cập nhật món ăn khi lọc
+     setState(() {
+       _selectedFilters = result ?? initialFilters; //lấy result nếu result khác null còn không lấy giá trị của initialFilters.
+     });
+
     }
+
   }
 
   @override
   Widget build(BuildContext context) {
+    //thiết lập 1 trình lắng nghe make sure Build method thực thi lại
+    //Khi nào mealsProvider thay đổi thì sẽ build lại
+    final meals =  ref.watch(mealsProvider);
+    //lọc bữa ăn trong dummy  lưu vào availableMeals
+    final availableMeals = meals.where((meal) {
+      // nếu chọn bữa ăn không có gluten và bữa ăn có gluten thì trả về false
+      if(_selectedFilters[Filter.glutenFree]! && !meal.isGlutenFree){
+        return false;
+      }
+      if(_selectedFilters[Filter.lactoseFree]! && !meal.isLactoseFree){
+        return false;
+      }
+      if(_selectedFilters[Filter.vegetable]! && !meal.isVegetarian){
+        return false;
+      }
+      if(_selectedFilters[Filter.vegan]! && !meal.isVegan){
+        return false;
+      }
+      return true;
+    }).toList();
+
     Widget activePage = CategoriesScreen(
       onToggleFavorite: _toggleFavoriteMealStatus,
+      availableMeals: availableMeals,
     ); // mặc định ban đầu là CategorieScreen
     var activePageTitle = 'Categories';
     if (_selectedPageIndex == 1) {

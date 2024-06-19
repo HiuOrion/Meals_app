@@ -10,7 +10,10 @@ import 'package:todo_app/screens/tabs.dart';
   }
 
 class FiltersScreen extends StatefulWidget {
-  const FiltersScreen({super.key});
+  const FiltersScreen({super.key, required this.currentFilter});
+
+  // lưu filter hiện tại để sau khi bấm chuyển màn từ tab về Filter thì vẫn còn hiện
+  final Map<Filter, bool> currentFilter;
 
   @override
   State<FiltersScreen> createState() {
@@ -26,22 +29,32 @@ class _FiltersScreenState extends State<FiltersScreen> {
   var _veganFilterSet = false;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _glutenFreeFilterSet = widget.currentFilter[Filter.glutenFree]!;
+    _lactoseFreeFilterSet = widget.currentFilter[Filter.lactoseFree]!;
+    _vegetableFilterSet = widget.currentFilter[Filter.vegetable]!;
+    _veganFilterSet = widget.currentFilter[Filter.vegan]!;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your filter'),
       ),
-      drawer: MainDrawer(onSelectScreen: (identifier) {
-        Navigator.of(context).pop();
-        if (identifier == 'Meals') {
-          Navigator.of(context)
-              .pushReplacement(MaterialPageRoute(builder: (ctx) => const TabsScreen()));
-        }
-      }),
+      // drawer: MainDrawer(onSelectScreen: (identifier) {
+      //   Navigator.of(context).pop();
+      //   if (identifier == 'Meals') {
+      //     Navigator.of(context)
+      //         .pushReplacement(MaterialPageRoute(builder: (ctx) => const TabsScreen()));
+      //   }
+      // }),
+
       //Trả về bộ lọc đã chọn về màn hình trước đó khi user back
       //return false để tránh việc đẩy màn hình 2 lần
       //lưu trữ dữ liệu vào các key enum đã tạo
-
       body: WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pop({

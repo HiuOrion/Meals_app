@@ -6,14 +6,15 @@ import 'package:todo_app/widgets/category_grid_items.dart';
 import 'package:todo_app/models/meal.dart';
 
 class CategoriesScreen extends StatelessWidget {
-  const CategoriesScreen({super.key, required this.onToggleFavorite});
+  const CategoriesScreen({super.key, required this.onToggleFavorite, required this.availableMeals});
 
   final void Function(Meal meal) onToggleFavorite;
+  final List<Meal> availableMeals;
 
   void _selectCategory(BuildContext context, Category category) {
     //Lọc ra dummyMeals có id trùng với id của Category mà user chọn
     // Và sau đó .tolist để trả về danh sách
-    final filteredMeals = dummyMeals
+    final filteredMeals = availableMeals
         .where((meal) => meal.categories.contains(category.id))
         .toList();
 
