@@ -36,9 +36,13 @@ class MealItem extends StatelessWidget {
         },
         child: Stack(
           children: [
-            FadeInImage(
-              placeholder: MemoryImage(kTransparentImage),
-              image: NetworkImage(meal.imageUrl),
+            // Tạo hiệu ứng 2 màn thông qua tag
+            Hero(
+              tag: meal.id,
+              child: FadeInImage(
+                placeholder: MemoryImage(kTransparentImage),
+                image: NetworkImage(meal.imageUrl),
+              ),
             ),
             Positioned(
               //Hiện Container vào phía trên cùng của hình ảnh trên
